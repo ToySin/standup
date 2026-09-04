@@ -1,0 +1,37 @@
+# Local configuration: channel IDs and the name table. Copy to
+# config.local.yaml, which is gitignored, and fill in your own values.
+#
+# Everything here is deployment-specific, and the name table is personal data,
+# so none of it belongs in a committed file.
+
+slack:
+  # The channel the HR tool posts approved leave to. Read only.
+  feed_channel: C00000000
+  # Where the digest is posted. Its membership is also the team roster, so the
+  # digest tracks joins and leaves without a list to maintain.
+  post_channel: C11111111
+
+# Optional display-name overrides, keyed by company email. Without an entry the
+# Slack profile name is used.
+display_names: {}
+
+# The names the HR tool uses for each person, keyed by company email.
+#
+# The feed identifies people only by the name registered in the HR tool, which
+# is maintained separately from Slack and drifts from it. Match these EXACTLY:
+# the code does no fuzzy matching, on purpose. A real feed turned out to
+# contain two different employees whose names differed by one letter, and
+# announcing that someone is away when they are at their desk is worse than
+# announcing nothing, because nobody notices it is wrong.
+#
+# A person can need several entries, since renaming them in the HR tool leaves
+# the old string on their old events. Confirm two strings are the same person
+# by checking their date ranges run sequentially and never overlap; if the
+# ranges overlap, it is two people and only one belongs here.
+#
+# Anyone in the destination channel with no entry is invisible to the digest
+# and is named in the message footer instead. Run `python3 main.py names` for
+# candidates from the feed, and verify each against the actual person.
+flex_names:
+  someone@example.com: [Someone Example]
+  someone.else@example.com: ["S. Else", Someone Else]

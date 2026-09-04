@@ -1,0 +1,32 @@
+# Slack app manifest for the standup digest bot.
+# Paste this at https://api.slack.com/apps -> Create New App -> From a manifest.
+#
+# Scopes are the minimum the tool actually uses:
+#   channels:history  read the leave feed channel (public)
+#   groups:read       list the destination channel's membership, the roster
+#   users:read        resolve those member IDs to people
+#   users:read.email  map them to company emails, the key of the flex-name table
+#   chat:write        post the digest
+#
+# The bot never writes to the feed channel and never reads the team channel's
+# history.
+display_information:
+  name: Team Standup
+  description: Posts a daily summary of who is on leave to the team channel
+  background_color: "#2c2d30"
+features:
+  bot_user:
+    display_name: standup
+    always_online: false
+oauth_config:
+  scopes:
+    bot:
+      - channels:history
+      - groups:read
+      - users:read
+      - users:read.email
+      - chat:write
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

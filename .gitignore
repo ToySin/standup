@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+
+# Rebuilt on every run; never a source of truth.
+events.db
+roster_cache.json
+
+# Deployment-specific, and holds personal data.
+config.local.yaml

@@ -1,0 +1,76 @@
+# Not active. Runs locally from a systemd user timer instead; see README.
+# To use GitHub Actions, move this to .github/workflows/digest.yml. Pushing
+# a file to that path needs a token with the `workflow` scope
+# (`gh auth refresh -h github.com -s workflow`), or add it via the web UI.
+name: Daily standup digest
+
+# 08:00 KST is 23:00 UTC the previous day, so Mon-Fri KST is Sun-Thu UTC.
+# GitHub's scheduler can run late under load, so treat this as "around 8am"
+# rather than on the minute. The job itself decides whether the KST date is a
+# weekday, using the timezone in config.yaml, so a delayed run still resolves
+# the right day.
+on:
+  schedule:
+    - cron: "0 23 * * 0-4"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Digest date, YYYY-MM-DD (blank = today in KST)"
+        required: false
+      channel:
+        description: "Post here instead of the configured channel"
+        required: false
+      preview_only:
+        description: "Render without posting"
+        type: boolean
+        default: false
+
+concurrency:
+  group: standup-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Render and post
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          # The event store and roster cache are rebuilt each run, so runner
+          # scratch space is enough and nothing needs to persist between runs.
+          STANDUP_STATE_DIR: ${{ runner.temp }}/standup
+        run: |
+          command=post
+          if [ "${{ inputs.preview_only }}" = "true" ]; then
+            command=preview
+          fi
+          args=""
+          if [ -n "${{ inputs.date }}" ]; then
+            args="$args --date ${{ inputs.date }}"
+          fi
+          if [ -n "${{ inputs.channel }}" ]; then
+            args="$args --channel ${{ inputs.channel }}"
+          fi
+          python main.py "$command" $args
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      # Needs no token: parsing, replay and rendering are covered offline.
+      - run: python -m unittest discover -v

@@ -1,0 +1,23 @@
+# Daily team schedule digest — shared configuration.
+#
+# This file is committed and must stay free of channel IDs, names and email
+# addresses. Put those in config.local.yaml, which is gitignored and merged
+# over this file at load time. See config.local.example.yaml for the shape.
+#
+# The digest reads a channel where an HR tool posts approved leave for the
+# whole company, filters it to the members of the destination channel, and
+# posts one summary each weekday morning.
+
+timezone: Asia/Seoul
+
+slack:
+  header: "오늘의 팀 일정"
+  # feed_channel and post_channel come from config.local.yaml.
+
+# Post on days when nobody is out. Keeping this on makes the digest a daily
+# heartbeat, so a silent morning means the job broke rather than a quiet day.
+post_when_empty: true
+
+skip_weekends: true
+# Company holidays, YYYY-MM-DD.
+skip_dates: []
